@@ -5,6 +5,32 @@ import tkinter as tk
 from tkinter import messagebox
 
 
+def generate_css_signal():
+    # Get the values from the entry fields
+    total_duration = float(total_duration_entry.get())
+    tone_duration = float(tone_duration_entry.get())
+    frequency_start = float(frequency_start_entry.get())
+    frequency_end = float(frequency_end_entry.get())
+
+    # Calculate the number of tone repetitions
+    num_repetitions = int(total_duration / tone_duration)
+
+    # Generate the time axis for each repetition
+    t_repetition = np.linspace(0, tone_duration, int(tone_duration * sampling_rate), endpoint=False)
+
+    # Generate the frequency axis for each repetition as a linear chirp
+    frequency_repetition = np.linspace(frequency_start, frequency_end, len(t_repetition))
+
+    # Generate the CSS signal for each repetition
+    signal_repetition = np.sin(2 * np.pi * frequency_repetition * t_repetition**2)
+
+    # Normalize the signal for each repetition
+    signal_repetition /= np.max(np.abs(signal_repetition))
+
+    # Concatenate the repetitions to create the full audio signal
+    signal = np.tile(signal_repetition, num_repetitions)
+
+    return signal
 def generate_tone():
     # Get the values from the entry fields
     total_duration = float(total_duration_entry.get())
@@ -31,7 +57,6 @@ def generate_tone():
     signal = np.tile(signal_repetition, num_repetitions)
 
     return signal
-
 
 def play_audio():
     signal = generate_tone()
@@ -75,6 +100,48 @@ def plot_graph():
     # Display the plot
     plt.show()
 
+def play_css_audio():
+    signal = generate_css_signal()
+
+    # Play the CSS audio signal
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=pyaudio.paFloat32,
+                    channels=1,
+                    rate=sampling_rate,
+                    output=True)
+
+    stream.write(signal.astype(np.float32).tostring())
+
+    stream.stop_stream()
+    stream.close()
+
+    p.terminate()
+
+def plot_css_graph():
+    signal = generate_css_signal()
+
+    # Compute the spectrogram
+    spec, freqs, t, im = plt.specgram(signal, NFFT=1024, Fs=sampling_rate, noverlap=512, cmap='jet')
+
+    # Set the axis labels
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
+
+    # Calculate the adjusted y-axis limits
+    frequency_start = float(frequency_start_entry.get())
+    frequency_end = float(frequency_end_entry.get())
+    y_min = max(frequency_start - 5000, freqs[0])
+    y_max = min(frequency_end + 5000, freqs[-1])
+    plt.ylim(y_min, y_max)
+
+    # Set the colorbar
+    plt.colorbar()
+
+    # Display the plot
+    plt.show()
+
+
 # Parameters
 sampling_rate = 44100  # Number of samples per second
 
@@ -104,12 +171,22 @@ frequency_end_entry = tk.Entry(window)
 frequency_end_entry.pack()
 
 
+
+
 # Create the buttons
 play_button = tk.Button(window, text="Play Audio", command=play_audio)
 play_button.pack()
 
 plot_button = tk.Button(window, text="Plot Graph", command=plot_graph)
 plot_button.pack()
+
+# Create a new button to play CSS audio
+play_css_button = tk.Button(window, text="Play CSS Audio", command=play_css_audio)
+play_css_button.pack()
+
+plot_button = tk.Button(window, text="Plot CSS Graph", command=plot_css_graph)
+plot_button.pack()
+
 
 
 # Run the main window loop
