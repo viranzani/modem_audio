@@ -46,16 +46,16 @@ def generate_tone():
 
     # Generate the frequency axis for each repetition
     frequency_repetition = np.linspace(frequency_start, frequency_end, len(t_repetition))
-
+    print(frequency_repetition)
     # Generate the audio signal for each repetition
     signal_repetition = np.sin(2 * np.pi * frequency_repetition * t_repetition)
-
+    print(signal_repetition)
     # Normalize the signal for each repetition
     signal_repetition /= np.max(np.abs(signal_repetition))
-
+    print(signal_repetition)
     # Concatenate the repetitions to create the full audio signal
     signal = np.tile(signal_repetition, num_repetitions)
-
+    print(signal)
     return signal
 
 def play_audio():
@@ -89,7 +89,9 @@ def plot_graph():
 
     # Calculate the adjusted y-axis limits
     frequency_start = float(frequency_start_entry.get())
+    print(frequency_start)
     frequency_end = float(frequency_end_entry.get())
+    print(frequency_end)
     y_min = max(frequency_start - 1000, freqs[0])
     y_max = min(frequency_end + 1000, freqs[-1])
     plt.ylim(y_min, y_max)
