@@ -119,7 +119,7 @@ default_duration = 1.0
 def generate_tone(bit_number, duration_seconds):
     min_freq = float(entry_min_freq.get())
     max_freq = float(entry_max_freq.get())
-    base_freq = min_freq + (bit_number / 256) * (max_freq-min_freq)  # Updated for 8 bits
+    base_freq = min_freq + (bit_number / 16) * (max_freq-min_freq)  # Updated for 4 bits
     sample_rate = 44100
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
     frequency_array = np.linspace(base_freq, base_freq + (max_freq-min_freq), len(time))
@@ -143,16 +143,12 @@ def generate_decreasing_tone(duration_seconds):
     tone = np.sin(2 * np.pi * frequency_array * time)
     return tone, time, frequency_array
 
+
 # Function to play the tone
 def play_tone(bit_number, duration_seconds):
     tone, _, _ = generate_tone(bit_number, duration_seconds)
-
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32,
-                    channels=1,
-                    rate=44100,
-                    output=True)
-
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=44100, output=True)
     stream.write(tone.astype(np.float32).tobytes())
     stream.stop_stream()
     stream.close()
@@ -171,15 +167,16 @@ def plot_waterfall(bit_number, duration_seconds):
 
 
 # Function to plot the frequency over time
-def plot_frequency_time(bit_number, duration_seconds):
-    _, time, frequency_array = generate_tone(bit_number, duration_seconds)
+def plot_frequency_time(bit_number1, bit_number2, duration_seconds):
+    tone1, time1, frequency_array1 = generate_tone(bit_number1, duration_seconds / 2)
+    tone2, time2, frequency_array2 = generate_tone(bit_number2, duration_seconds / 2)
 
-    plt.scatter(time, frequency_array, s=1, c='b', marker='.')
-    plt.title('Frequência x Tempo')
-    plt.xlabel('Tempo')
-    plt.ylabel('Frequência')
+    plt.scatter(time1, frequency_array1, s=1, c='b', marker='.')
+    plt.scatter(time2 + duration_seconds / 2, frequency_array2, s=1, c='r', marker='.')
+    plt.title('Frequency x Time for Two Tones')
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
     plt.show()
-
 # Function to plot the continuous frequency over time for text
 def plot_frequency_time_text(text, duration_seconds):
     binary_text = ' '.join(format(ord(i), '08b') for i in text)
@@ -193,15 +190,22 @@ def plot_frequency_time_text(text, duration_seconds):
 
     for binary_num in binary_list:
         bit_number = int(binary_num, 2)
-        tone_duration = duration_seconds
-        _, _, frequency_array = generate_tone(bit_number, tone_duration)
-        frequencies.extend(frequency_array)
+        first_half = bit_number >> 4
+        second_half = bit_number & 0b1111
+
+        tone_duration = duration_seconds / 2
+
+        _, _, frequency_array1 = generate_tone(first_half, tone_duration)
+        _, _, frequency_array2 = generate_tone(second_half, tone_duration)
+
+        frequencies.extend(frequency_array1)
+        frequencies.extend(frequency_array2)
         current_time += duration_seconds
 
     plt.scatter(time, frequencies, s=0.5, c='b', marker='.')
-    plt.title('Frequência x Tempo (Texto)')
-    plt.xlabel('Tempo')
-    plt.ylabel('Frequência')
+    plt.title('Frequency x Time (Text) for Two Tones')
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
     plt.show()
 
 # Function to get the input and generate the tone
@@ -227,21 +231,17 @@ def convert_and_play_text():
     text = entry_text.get()
     duration_seconds = float(entry_duration.get())
 
-    binary_text = ' '.join(format(ord(i), '08b') for i in text)
-    binary_list = binary_text.split(' ')
-
-    for binary_num in binary_list:
-        bit_number = int(binary_num, 2)
-        play_tone(bit_number, duration_seconds)
+    for char in text:
+        first_half = (ord(char) >> 4) & 0b1111
+        second_half = ord(char) & 0b1111
+        play_tone(first_half, duration_seconds)
+        play_tone(second_half, duration_seconds)
 
     # Add the ending decreasing tone played twice
     end_tone, _, _ = generate_decreasing_tone(duration_seconds)
     end_tone_twice = np.concatenate((end_tone, end_tone))
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32,
-                    channels=1,
-                    rate=44100,
-                    output=True)
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=44100, output=True)
     stream.write(end_tone_twice.astype(np.float32).tobytes())
     stream.stop_stream()
     stream.close()
