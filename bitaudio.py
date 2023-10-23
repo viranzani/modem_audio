@@ -122,7 +122,7 @@ def generate_tone(bit_number, duration_seconds):
     base_freq = min_freq + (bit_number / 256) * (max_freq-min_freq)  # Updated for 8 bits
     sample_rate = 44100
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
-    frequency_array = np.linspace(base_freq, base_freq + 1000, len(time))
+    frequency_array = np.linspace(base_freq, base_freq + (max_freq-min_freq), len(time))
 
     for i in range(len(frequency_array)):
         while frequency_array[i] > max_freq:
