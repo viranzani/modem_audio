@@ -32,7 +32,7 @@ def generate_decreasing_tone(duration_seconds):
     start_freq = max_freq
     end_freq = min_freq
     sample_rate = 44100
-    time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
+    time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds/2))
     frequency_array = np.linspace(start_freq, end_freq, len(time))
     tone = np.sin(2 * np.pi * frequency_array * time)
     return tone, time, frequency_array
@@ -95,7 +95,10 @@ def plot_frequency_time_text(text, duration_seconds):
 def get_input():
     bit_number = int(entry.get(), 2)
     duration_seconds = float(entry_duration.get())
-    play_tone(bit_number, duration_seconds)
+    first_half = bit_number & 0b1111
+    second_half = (bit_number >> 4) & 0b1111
+    play_tone(first_half, duration_seconds / 2)
+    play_tone(second_half, duration_seconds / 2)
 
 
 # Function to convert string to binary and play its corresponding tone
@@ -107,11 +110,11 @@ def convert_and_play_text():
     for char in text:
         first_half = (ord(char) >> 4) & 0b1111
         second_half = ord(char) & 0b1111
-        play_tone(first_half, duration_seconds)
-        play_tone(second_half, duration_seconds)
+        play_tone(first_half, duration_seconds/2)
+        play_tone(second_half, duration_seconds/2)
 
     # Add the ending decreasing tone played twice
-    end_tone, _, _ = generate_decreasing_tone(duration_seconds)
+    end_tone, _, _ = generate_decreasing_tone(duration_seconds/2)
     end_tone_twice = np.concatenate((end_tone, end_tone))
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paFloat32, channels=1, rate=44100, output=True)
@@ -125,7 +128,10 @@ def convert_and_play_text():
 def plot_freq_time():
     bit_number = int(entry.get(), 2)
     duration_seconds = float(entry_duration.get())
-    plot_frequency_time(bit_number, duration_seconds)
+    first_half = bit_number & 0b1111
+    second_half = (bit_number >> 4) & 0b1111
+
+    plot_frequency_time(second_half,first_half, duration_seconds)
 
 def plot_freq_time_text():
     text = entry_text.get()
