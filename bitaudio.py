@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import *
 import pyaudio
-
+from scipy.io import wavfile
 
 default_min_freq = 1000
 default_max_freq = 2000
@@ -14,7 +14,7 @@ def generate_tone(bit_number, duration_seconds):
     min_freq = float(entry_min_freq.get())
     max_freq = float(entry_max_freq.get())
     base_freq = min_freq + (bit_number / 16) * (max_freq-min_freq)  # Updated for 4 bits
-    sample_rate = 44100
+    sample_rate = 48000
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
     frequency_array = np.linspace(base_freq, base_freq + (max_freq-min_freq), len(time))
 
@@ -31,7 +31,7 @@ def generate_decreasing_tone(duration_seconds):
     max_freq = float(entry_max_freq.get())
     start_freq = max_freq
     end_freq = min_freq
-    sample_rate = 44100
+    sample_rate = 48000
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds/2))
     frequency_array = np.linspace(start_freq, end_freq, len(time))
     tone = np.sin(2 * np.pi * frequency_array * time)
@@ -42,7 +42,7 @@ def generate_decreasing_tone(duration_seconds):
 def play_tone(bit_number, duration_seconds):
     tone, _, _ = generate_tone(bit_number, duration_seconds)
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=44100, output=True)
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=48000, output=True)
     stream.write(tone.astype(np.float32).tobytes())
     stream.stop_stream()
     stream.close()
@@ -66,7 +66,7 @@ def plot_frequency_time_text(text, duration_seconds):
     binary_list = binary_text.split(' ')
     total_duration = len(binary_list) * duration_seconds
 
-    time = np.linspace(0, total_duration, int(44100 * total_duration))
+    time = np.linspace(0, total_duration, int(48000 * total_duration))
     frequencies = []
 
     current_time = 0
@@ -103,25 +103,40 @@ def get_input():
 
 # Function to convert string to binary and play its corresponding tone
 
-def convert_and_play_text():
+def convert_and_play_text(output_filename="output.wav"):
     text = entry_text.get()
     duration_seconds = float(entry_duration.get())
-
+    tones = []
     for char in text:
         first_half = (ord(char) >> 4) & 0b1111
         second_half = ord(char) & 0b1111
-        play_tone(first_half, duration_seconds/2)
+        play_tone(first_half, duration_seconds / 2)
         play_tone(second_half, duration_seconds/2)
+        tone1, _, _ = generate_tone(first_half, duration_seconds/2)
+        tone2, _, _ = generate_tone(second_half, duration_seconds/2)
+        tones.append(tone1)
+        tones.append(tone2)
 
     # Add the ending decreasing tone played twice
     end_tone, _, _ = generate_decreasing_tone(duration_seconds/2)
     end_tone_twice = np.concatenate((end_tone, end_tone))
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=44100, output=True)
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=48000, output=True)
     stream.write(end_tone_twice.astype(np.float32).tobytes())
     stream.stop_stream()
     stream.close()
-    p.terminate()
+    tones.append(end_tone_twice)
+
+    print(tones)
+    # Concatenate all the tones into a single array
+    concatenated_tones = np.concatenate(tones)
+    print(concatenated_tones)
+    # Convert the list to a numpy array
+    tones_np = np.array(concatenated_tones)
+    print(tones_np)
+    # Save the tones to a .wav file
+    wavfile.write(output_filename, 48000, tones_np.astype(np.float32))
+
 
 
 # Function to plot the frequency over time
@@ -217,3 +232,5 @@ button_freq_time_text.configure(background='lightseagreen', font=('Arial', 12))
 
 
 root.mainloop()
+
+
