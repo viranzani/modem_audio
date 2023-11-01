@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import *
@@ -8,13 +7,14 @@ from scipy.io import wavfile
 default_min_freq = 1000
 default_max_freq = 2000
 default_duration = 1.0
+sample_rate = 48000
+chirp_freq_step = (1000/16)
 
 # Function to generate the tone
 def generate_tone(bit_number, duration_seconds):
     min_freq = float(entry_min_freq.get())
     max_freq = float(entry_max_freq.get())
     base_freq = min_freq + (bit_number / 16) * (max_freq-min_freq)  # Updated for 4 bits
-    sample_rate = 48000
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
     frequency_array = np.linspace(base_freq, base_freq + (max_freq-min_freq), len(time))
 
@@ -31,7 +31,6 @@ def generate_decreasing_tone(duration_seconds):
     max_freq = float(entry_max_freq.get())
     start_freq = max_freq
     end_freq = min_freq
-    sample_rate = 48000
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds/2))
     frequency_array = np.linspace(start_freq, end_freq, len(time))
     tone = np.sin(2 * np.pi * frequency_array * time)
@@ -42,7 +41,7 @@ def generate_decreasing_tone(duration_seconds):
 def play_tone(bit_number, duration_seconds):
     tone, _, _ = generate_tone(bit_number, duration_seconds)
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=48000, output=True)
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
     stream.write(tone.astype(np.float32).tobytes())
     stream.stop_stream()
     stream.close()
@@ -59,14 +58,18 @@ def plot_frequency_time(bit_number1, bit_number2, duration_seconds):
     plt.title('Frequency x Time for Two Tones')
     plt.xlabel('Time')
     plt.ylabel('Frequency')
+    plt.grid()
     plt.show()
 # Function to plot the continuous frequency over time for text
 def plot_frequency_time_text(text, duration_seconds):
     binary_text = ' '.join(format(ord(i), '08b') for i in text)
+    print(binary_text)
     binary_list = binary_text.split(' ')
+    print('\n')
+    print(binary_list)
     total_duration = len(binary_list) * duration_seconds
 
-    time = np.linspace(0, total_duration, int(48000 * total_duration))
+    time = np.linspace(0, total_duration, int(sample_rate * total_duration))
     frequencies = []
 
     current_time = 0
@@ -85,10 +88,11 @@ def plot_frequency_time_text(text, duration_seconds):
         frequencies.extend(frequency_array2)
         current_time += duration_seconds
 
-    plt.scatter(time, frequencies, s=0.5, c='b', marker='.')
+    plt.scatter(time, frequencies, s=0.5, c='b')
     plt.title('Frequency x Time (Text) for Two Tones')
     plt.xlabel('Time')
     plt.ylabel('Frequency')
+    plt.grid()
     plt.show()
 
 # Function to get the input and generate the tone
@@ -121,23 +125,20 @@ def convert_and_play_text(output_filename="output.wav"):
     end_tone, _, _ = generate_decreasing_tone(duration_seconds/2)
     end_tone_twice = np.concatenate((end_tone, end_tone))
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=48000, output=True)
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
     stream.write(end_tone_twice.astype(np.float32).tobytes())
     stream.stop_stream()
     stream.close()
     tones.append(end_tone_twice)
 
-    print(tones)
     # Concatenate all the tones into a single array
     concatenated_tones = np.concatenate(tones)
-    print(concatenated_tones)
+
     # Convert the list to a numpy array
     tones_np = np.array(concatenated_tones)
-    print(tones_np)
+
     # Save the tones to a .wav file
-    wavfile.write(output_filename, 48000, tones_np.astype(np.float32))
-
-
+    wavfile.write(output_filename, sample_rate, tones_np.astype(np.float32))
 
 # Function to plot the frequency over time
 def plot_freq_time():
@@ -230,7 +231,4 @@ button_freq_time.configure(background='lightpink', font=('Arial', 12))
 button_text.configure(background='lightcyan', font=('Arial', 12))
 button_freq_time_text.configure(background='lightseagreen', font=('Arial', 12))
 
-
 root.mainloop()
-
-
