@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from tkinter import *
 import pyaudio
 from scipy.io import wavfile
+from demodteste import demodule_wav
 
 default_min_freq = 1000
 default_max_freq = 2000
@@ -24,6 +25,17 @@ def generate_tone(bit_number, duration_seconds):
 
     tone = np.sin(2 * np.pi * frequency_array * time)
 
+    return tone, time, frequency_array
+
+
+def generate_increasing_tone(duration_seconds):
+    min_freq = float(entry_min_freq.get())
+    max_freq = float(entry_max_freq.get())
+    start_freq = min_freq
+    end_freq = max_freq
+    time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds/2))
+    frequency_array = np.linspace(start_freq, end_freq, len(time))
+    tone = np.sin(2 * np.pi * frequency_array * time)
     return tone, time, frequency_array
 
 def generate_decreasing_tone(duration_seconds):
@@ -111,6 +123,17 @@ def convert_and_play_text(output_filename="output.wav"):
     text = entry_text.get()
     duration_seconds = float(entry_duration.get())
     tones = []
+    sync_tone, _, _ = generate_increasing_tone(duration_seconds)
+    sync_tone_twice = np.concatenate((sync_tone, sync_tone))
+    sync_tone_thrice= np.concatenate((sync_tone_twice, sync_tone))
+    tones.append(sync_tone_thrice)
+
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
+    stream.write(sync_tone_thrice.astype(np.float32).tobytes())
+    stream.stop_stream()
+    stream.close()
+
     for char in text:
         first_half = (ord(char) >> 4) & 0b1111
         second_half = ord(char) & 0b1111
@@ -122,7 +145,7 @@ def convert_and_play_text(output_filename="output.wav"):
         tones.append(tone2)
 
     # Add the ending decreasing tone played twice
-    end_tone, _, _ = generate_decreasing_tone(duration_seconds/2)
+    end_tone, _, _ = generate_decreasing_tone(duration_seconds)
     end_tone_twice = np.concatenate((end_tone, end_tone))
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
@@ -153,6 +176,8 @@ def plot_freq_time_text():
     text = entry_text.get()
     duration_seconds = float(entry_duration.get())
     plot_frequency_time_text(text, duration_seconds)
+
+
 
 # Create the UI
 root = Tk()
@@ -216,6 +241,9 @@ button_freq_time.pack()
 button_freq_time_text = Button(root, text="Gráfico Frequência x Tempo (Texto)", command=plot_freq_time_text)
 button_freq_time_text.pack()
 
+button_demod = Button(root, text="Demodulação do tom", command=demodule_wav)
+button_demod.pack()
+
 entry_min_freq.insert(0, str(default_min_freq))
 entry_max_freq.insert(0, str(default_max_freq))
 entry_duration.insert(0, str(default_duration))
@@ -230,5 +258,7 @@ button_tone.configure(background='lightblue', font=('Arial', 12))
 button_freq_time.configure(background='lightpink', font=('Arial', 12))
 button_text.configure(background='lightcyan', font=('Arial', 12))
 button_freq_time_text.configure(background='lightseagreen', font=('Arial', 12))
+button_demod.configure(background='darkblue', font=('Arial', 12))
+
 
 root.mainloop()
