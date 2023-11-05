@@ -4,17 +4,30 @@ import scipy.io.wavfile as wav
 import matplotlib.pyplot as plt
 import pandas as pd
 import pygame
+
 def demodule_wav():
     # Carregar o arquivo de áudio (substitua 'caminho/para/arquivo.wav' pelo caminho do seu arquivo)
     pygame.init()
     taxa_amostragem, sinal = wav.read("output.wav")
-    print(sinal[0])
+
     # Calcular a transformada de Hilbert do sinal
     sinal_hilbert = signal.hilbert(sinal)
+    #TODO - Trocar envoltória por frequencia instantanea
     envoltoria = np.abs(sinal_hilbert)  # Envoltória do sinal
     duration=len(envoltoria)/taxa_amostragem
     print(duration)
     anterior = envoltoria[0]
+
+    segment_size = 24000  # Tamanho do segmento
+
+    # Inicializar o array que irá armazenar os resultados da transformada de Hilbert para cada segmento
+    sinal_hilbert_array = np.zeros_like(sinal, dtype=np.complex128)
+
+    # Calcular a transformada de Hilbert para cada segmento
+    for i in range(0, len(sinal), segment_size):
+        segmento = sinal[i:i + segment_size]
+        sinal_hilbert_segmento = signal.hilbert(segmento)
+        sinal_hilbert_array[i:i + segment_size] = sinal_hilbert_segmento
 
     valores = []
     incremento = 0.5
@@ -30,23 +43,23 @@ def demodule_wav():
         momentos.append("{:.5f}".format(i))
 
     print(momentos)
-    for i in range(0, (len(envoltoria) - 1)):
-        if (envoltoria[i] - anterior) > 0.15:
-            time_value = i / taxa_amostragem
-            if 1.5 <= time_value <= (duration - 1):
-                valores.append("{:.5f}".format(time_value))
-        anterior = envoltoria[i]
+    #for i in range(0, (len(envoltoria) - 1)):
+    #    if (envoltoria[i] - anterior) > 0.15:
+    #        time_value = i / taxa_amostragem
+    #        if 1.5 <= time_value <= (duration - 1):
+    #            valores.append("{:.5f}".format(time_value))
+    #    anterior = envoltoria[i]
 
     print(f'Instantes no tempo com diferenças maiores de 0.15: {valores}')
 
     # Eliminar valores próximos
-    valores_finais = [valores[0]]
-    for valor in valores[1:]:
-        if not any(np.isclose(float(valor), float(v), atol=0.00009) for v in valores_finais):
-            valores_finais.append(valor)
+    #valores_finais = [valores[0]]
+    #for valor in valores[1:]:
+    #    if not any(np.isclose(float(valor), float(v), atol=0.00009) for v in valores_finais):
+    #        valores_finais.append(valor)
 
     # Calcular a frequência instantânea a partir da fase do sinal analítico
-    fase = np.unwrap(np.angle(sinal_hilbert))  # Desembrulhar a fase para evitar descontinuidades
+    fase = np.unwrap(np.angle(sinal_hilbert_array))  # Desembrulhar a fase para evitar descontinuidades
     frequencia_instantanea = (np.diff(fase) / (2.0 * np.pi) * taxa_amostragem)  # Frequência instantânea em Hz
 
     # Plotar o sinal de áudio e a frequência instantânea
@@ -65,25 +78,24 @@ def demodule_wav():
     plt.xlabel('Tempo (s)')
     plt.ylabel('Frequência Instantânea (Hz)')
     plt.ylim(0, 4000)  # Limitar o eixo y entre 0 e 2000 Hz
-    plt.xlim(15, 22.5)  # Limitar o eixo y entre 0 e 2000 Hz
+    #plt.xlim(15, 22.5)  # Limitar o eixo y entre 0 e 2000 Hz
 
     plt.tight_layout()
     plt.show()
     # TODO - Fazer a transformada de hilbert ser refeita de x em x tempos
+    print(len(sinal))
     #sinal[201:-1]
     #sinal[x] = sinal[x+200]
     frequencias=[]
     freq_anterior=frequencia_instantanea[0]
-    #for i in range(len(sinal)):
     for i in range(0, (len(frequencia_instantanea) - 1)):
         if frequencia_instantanea[i] - freq_anterior < -350:
             momento = i / taxa_amostragem
+            print(i)
             print(momento)
-            print(frequencia_instantanea[i] - freq_anterior)
             if 1.5 <= momento <= (duration - 1):
                 momentos.append("{:.5f}".format(momento))
                 frequencias.append("{:.5f}".format(frequencia_instantanea[i]))
-                print(f'momento: {momento}   frequencias: {frequencia_instantanea[i]}')
 
         freq_anterior = frequencia_instantanea[i]
 
@@ -178,7 +190,7 @@ def demodule_wav():
             print(type(ascii_result))
             if ascii_result == "space":
                 ascii_result = " "
-            decoded_text = decoded_text + ascii_result
+            decoded_text = decoded_text + str(ascii_result)
 
     print("Texto decodificado:", decoded_text)
 
