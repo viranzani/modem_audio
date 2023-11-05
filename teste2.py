@@ -81,7 +81,7 @@ def demodule_wav():
             print(momento)
             print(frequencia_instantanea[i] - freq_anterior)
             if 1.5 <= momento <= (duration - 1):
-                momentos.append("{:.5f}".format(moment o))
+                momentos.append("{:.5f}".format(momento))
                 frequencias.append("{:.5f}".format(frequencia_instantanea[i]))
                 print(f'momento: {momento}   frequencias: {frequencia_instantanea[i]}')
 
