@@ -55,7 +55,6 @@ def demodule_wav():
 
     print(f'Retirada de duplicatas: {valores_finais}')
 
-
     differences = []
     for i in range(1, len(valores_finais)):
         diff = "{:.5f}".format(float(valores_finais[i]) - float(valores_finais[i - 1]))
@@ -119,4 +118,4 @@ def demodule_wav():
 
     print("Texto decodificado:", decoded_text)
 
-demodule_wav()
+#demodule_wav()

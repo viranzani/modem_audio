@@ -128,17 +128,18 @@ def convert_and_play_text(output_filename="output.wav"):
     sync_tone_thrice= np.concatenate((sync_tone_twice, sync_tone))
     tones.append(sync_tone_thrice)
 
-    p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
-    stream.write(sync_tone_thrice.astype(np.float32).tobytes())
-    stream.stop_stream()
-    stream.close()
+
+    #p = pyaudio.PyAudio()
+    #stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
+    #stream.write(sync_tone_thrice.astype(np.float32).tobytes())
+    #stream.stop_stream()
+    #stream.close()
 
     for char in text:
         first_half = (ord(char) >> 4) & 0b1111
         second_half = ord(char) & 0b1111
-        play_tone(first_half, duration_seconds / 2)
-        play_tone(second_half, duration_seconds/2)
+        #play_tone(first_half, duration_seconds / 2)
+        #play_tone(second_half, duration_seconds/2)
         tone1, _, _ = generate_tone(first_half, duration_seconds/2)
         tone2, _, _ = generate_tone(second_half, duration_seconds/2)
         tones.append(tone1)
@@ -147,11 +148,11 @@ def convert_and_play_text(output_filename="output.wav"):
     # Add the ending decreasing tone played twice
     end_tone, _, _ = generate_decreasing_tone(duration_seconds)
     end_tone_twice = np.concatenate((end_tone, end_tone))
-    p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
-    stream.write(end_tone_twice.astype(np.float32).tobytes())
-    stream.stop_stream()
-    stream.close()
+    #p = pyaudio.PyAudio()
+    #stream = p.open(format=pyaudio.paFloat32, channels=1, rate=sample_rate, output=True)
+    #stream.write(end_tone_twice.astype(np.float32).tobytes())
+    #stream.stop_stream()
+    #stream.close()
     tones.append(end_tone_twice)
 
     # Concatenate all the tones into a single array
@@ -161,7 +162,7 @@ def convert_and_play_text(output_filename="output.wav"):
     tones_np = np.array(concatenated_tones)
 
     # Save the tones to a .wav file
-    wavfile.write(output_filename, sample_rate, tones_np.astype(np.float32))
+    wavfile.write(output_filename, 48000, tones_np.astype(np.float32))
 
 # Function to plot the frequency over time
 def plot_freq_time():
