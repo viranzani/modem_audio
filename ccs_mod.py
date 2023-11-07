@@ -15,8 +15,6 @@ default_max_freq = 2000
 default_duration = 1.0
 # Taxa de Amostragem
 sample_rate = 48000
-# Passo de frequência dos Chirps
-chirp_freq_step = (1000/16)
 
 # Função que gera o tom
 def generate_tone(bit_number, duration_seconds):
