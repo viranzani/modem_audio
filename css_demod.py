@@ -1,8 +1,10 @@
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import scipy.signal as signal
 import scipy.io.wavfile as wav
-import matplotlib.pyplot as plt
-import pandas as pd
+
+
 
 def demodule_wav(filename):
     sample_rate, data = wav.read(filename)

@@ -1,10 +1,11 @@
-import numpy as np
+from css_demod import demodule_wav
 import matplotlib.pyplot as plt
-from tkinter import *
+import numpy as np
 import pyaudio
 from scipy.io import wavfile
-from css_demod import demodule_wav
+from tkinter import *
 from tkinter import filedialog
+
 
 # Frequência Mínima padrão
 default_min_freq = 1000
