@@ -25,6 +25,7 @@ def generate_tone(bit_number, duration_seconds):
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
     frequency_array = np.linspace(base_freq, base_freq + (max_freq-min_freq), len(time))
 
+    # For que gera o comportamento característico do chirp
     for i in range(len(frequency_array)):
         while frequency_array[i] > max_freq:
             frequency_array[i] -= min_freq
