@@ -1,6 +1,7 @@
 from css_demod import demodule_wav
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pyaudio
 from scipy.io import wavfile
 from tkinter import *
@@ -156,15 +157,18 @@ def convert_and_play_text(output_filename="output.wav"):
 
 #Função para gerar o arquivo .wav referente ao texto digitado na GUI
 def generate_wav():
-    output_filename = entry_filename.get() + ".wav"
+    output_folder = "wav_files"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    output_filename = os.path.join(output_folder, entry_filename.get() + ".wav")
     text = entry_text.get()
     duration_seconds = float(entry_duration.get())
     tones = []
     sync_tone, _, _ = generate_increasing_tone(duration_seconds)
     sync_tone_twice = np.concatenate((sync_tone, sync_tone))
-    sync_tone_thrice= np.concatenate((sync_tone_twice, sync_tone))
+    sync_tone_thrice = np.concatenate((sync_tone_twice, sync_tone))
     tones.append(sync_tone_thrice)
-
     for char in text:
         first_half = (ord(char) >> 4) & 0b1111
         second_half = ord(char) & 0b1111
@@ -186,7 +190,7 @@ def generate_wav():
 
     # Save the tones to a .wav file
     wavfile.write(output_filename, 48000, tones_np.astype(np.float32))
-    
+
 #Função intermediária para que o botão chame a função de plot do byte com os devidos argumentos
 def plot_freq_time():
     bit_number = int(entry.get(), 2)
@@ -204,9 +208,10 @@ def plot_freq_time_text():
 
 # Função para selecionar qual arquivo .wav deseja demodular
 def select_file():
-    file_path = filedialog.askopenfilename(filetypes=[("WAV files", "*.wav")])
+    initial_dir = "./wav_files"
+    file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("WAV files", "*.wav")])
     demodulated_text = demodule_wav(file_path)  # Assuming demodule_wav now accepts the file path as an argument
-    demod_label.config(text= "Texto Decodificado: " + demodulated_text)
+    demod_label.config(text="Texto Decodificado: " + demodulated_text)
 
 # Criando a interface de usuário
 root = Tk()
