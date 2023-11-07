@@ -1,4 +1,5 @@
 from css_demod import demodule_wav
+from css_demod import plot_wav
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -207,12 +208,24 @@ def plot_freq_time_text():
     duration_seconds = float(entry_duration.get())
     plot_frequency_time_text(text, duration_seconds)
 
+
+# Variável global para armazenar o nome do arquivo selecionado
+
+selected_file = ""
 # Função para selecionar qual arquivo .wav deseja demodular
 def select_file():
+    global selected_file
     initial_dir = "./wav_files"
     file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("WAV files", "*.wav")])
+    selected_file = file_path
     demodulated_text = demodule_wav(file_path)  # Assuming demodule_wav now accepts the file path as an argument
     demod_label.config(text="Texto Decodificado: " + demodulated_text)
+
+def plot_selected_file():
+    if selected_file:
+        plot_wav(selected_file)
+    else:
+        print("Nenhum arquivo selecionado.")
 
 # Criando a interface de usuário
 root = Tk()
@@ -299,6 +312,9 @@ separation_label3.pack(pady=4)
 button_select_file = Button(root, text="Demodulação do .wav", command=select_file)
 button_select_file.pack()
 
+button_plot_wav = Button(root, text="Plotar Áudio Selecionado", command=plot_selected_file)
+button_plot_wav.pack(pady=4)
+
 demod_label= Label(root, text="Texto Decodificado: ", font=('Arial', 16, 'bold'))
 demod_label.pack(pady=16)
 
@@ -318,5 +334,7 @@ button_text.configure(background='lightblue', font=('Arial', 12))
 button_freq_time_text.configure(background='lightblue', font=('Arial', 12))
 button_select_file.configure(background='lightgrey', font=('Arial', 12))
 button_generate_wav.configure(background='lightgrey', font=('Arial', 12))
+button_plot_wav.configure(background='lightblue', font=('Arial', 12))
+
 
 root.mainloop()

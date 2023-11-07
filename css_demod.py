@@ -43,26 +43,6 @@ def demodule_wav(filename):
     phase = np.unwrap(np.angle(data_hilbert_array))  # Desembrulhar a fase para evitar descontinuidades
     phase_break = (np.diff(phase) / (2.0 * np.pi) * sample_rate)  # Frequência instantânea em Hz
 
-    # Plotar o sinal de áudio e a frequência instantânea
-    time = np.arange(len(data)) / sample_rate
-
-    plt.figure(figsize=(12, 6))
-    plt.subplot(2, 1, 1)
-    plt.plot(time, data, label='Sinal de Áudio')
-    plt.plot(time, frequency, label='Frequência Instantânea')
-    plt.xlabel('Tempo (s)')
-    plt.ylabel('Amplitude')
-    plt.legend()
-
-    plt.subplot(2, 1, 2)
-    plt.plot(time[:-1], phase_break)
-    plt.xlabel('Tempo (s)')
-    plt.ylabel('Frequência Instantânea (Hz)')
-    plt.ylim(0, 4000)  # Limitar o eixo y entre 0 e 2000 Hz
-    #plt.xlim(15, 22.5)  # Limitar o eixo y entre 0 e 2000 Hz
-
-    plt.tight_layout()
-    plt.show()
     #print(len(data))
 
     #Guardando o tempo em segundos de cada quebra de fase que ocorreu após os Sync Chirps e antes dos End Chirps
@@ -171,6 +151,32 @@ def demodule_wav(filename):
     print("Texto decodificado:", decoded_text)
     return decoded_text
 
+# Função para plottar o gráfico da demodulação
+def plot_wav(filename):
+    sample_rate, data = wav.read(filename)
 
+    data_hilbert = signal.hilbert(data)
+    frequency = np.abs(data_hilbert)
 
-#demodule_wav()
+    duration = len(data) / sample_rate
+
+    time = np.arange(len(data)) / sample_rate
+
+    plt.figure(figsize=(12, 6))
+    plt.subplot(2, 1, 1)
+    plt.plot(time, data, label='Sinal de Áudio')
+    plt.plot(time, frequency, label='Frequência Instantânea')
+    plt.xlabel('Tempo (s)')
+    plt.ylabel('Amplitude')
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    phase_break = (np.diff(np.unwrap(np.angle(data_hilbert))) / (2.0 * np.pi) * sample_rate)
+    plt.plot(time[:-1], phase_break)
+    plt.xlabel('Tempo (s)')
+    plt.ylabel('Frequência Instantânea (Hz)')
+    plt.ylim(0, 4000)
+
+    plt.tight_layout()
+    plt.show()
+
