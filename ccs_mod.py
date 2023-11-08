@@ -75,9 +75,9 @@ def plot_frequency_time(bit_number1, bit_number2, duration_seconds):
 
     plt.scatter(time1, frequency_array1, s=1, c='b', marker='.')
     plt.scatter(time2 + duration_seconds / 2, frequency_array2, s=1, c='r', marker='.')
-    plt.title('Frequency x Time for Two Tones')
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
+    plt.title('Padrão do Código de Espalhamento')
+    plt.xlabel('Tempo')
+    plt.ylabel('Frequência')
     plt.grid()
     plt.show()
 
@@ -110,9 +110,9 @@ def plot_frequency_time_text(text, duration_seconds):
         current_time += duration_seconds
 
     plt.scatter(time, frequencies, s=0.5, c='b')
-    plt.title('Frequency x Time (Text) for Two Tones')
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
+    plt.title('Chirps correspondentes ao Texto Modulado: ')
+    plt.xlabel('Tempo')
+    plt.ylabel('Frequência')
     plt.grid()
     plt.show()
 
@@ -312,7 +312,7 @@ separation_label3.pack(pady=4)
 button_select_file = Button(root, text="Demodulação do .wav", command=select_file)
 button_select_file.pack()
 
-button_plot_wav = Button(root, text="Plotar Áudio Selecionado", command=plot_selected_file)
+button_plot_wav = Button(root, text="Gráfico Demodulação", command=plot_selected_file)
 button_plot_wav.pack(pady=4)
 
 demod_label= Label(root, text="Texto Decodificado: ", font=('Arial', 16, 'bold'))
