@@ -20,18 +20,20 @@ default_duration = 1.0
 # Taxa de Amostragem
 sample_rate = 48000
 
+plt.rcParams.update({'font.size': 18})
+
 # Função que gera o tom
 def generate_tone(bit_number, duration_seconds):
     min_freq = float(entry_min_freq.get())
     max_freq = float(entry_max_freq.get())
-    base_freq = min_freq + (bit_number / 16) * (max_freq-min_freq)  # Updated for 4 bits
+    base_freq = min_freq + (bit_number / 16) * (max_freq-min_freq)
     time = np.linspace(0, duration_seconds, int(sample_rate * duration_seconds))
     frequency_array = np.linspace(base_freq, base_freq + (max_freq-min_freq), len(time))
 
     # For que gera o comportamento característico do chirp
     for i in range(len(frequency_array)):
         while frequency_array[i] > max_freq:
-            frequency_array[i] -= min_freq
+            frequency_array[i] -= (max_freq-min_freq)
 
     tone = np.sin(2 * np.pi * frequency_array * time)
 
@@ -74,7 +76,7 @@ def play_tone(bit_number, duration_seconds):
 def plot_frequency_time(bit_number1, bit_number2, duration_seconds):
     tone1, time1, frequency_array1 = generate_tone(bit_number1, duration_seconds / 2)
     tone2, time2, frequency_array2 = generate_tone(bit_number2, duration_seconds / 2)
-
+    plt.figure(figsize=(10, 8))
     plt.scatter(time1, frequency_array1, s=1, c='b', marker='.')
     plt.scatter(time2 + duration_seconds / 2, frequency_array2, s=1, c='r', marker='.')
     plt.title('Padrão do Código de Espalhamento')
@@ -86,31 +88,27 @@ def plot_frequency_time(bit_number1, bit_number2, duration_seconds):
 # Função que plota a variação da frequência no tempo referente ao texto
 def plot_frequency_time_text(text, duration_seconds):
     binary_text = ' '.join(format(ord(i), '08b') for i in text)
-    print(binary_text)
     binary_list = binary_text.split(' ')
-    print('\n')
-    print(binary_list)
     total_duration = len(binary_list) * duration_seconds
-
-    time = np.linspace(0, total_duration, int(sample_rate * total_duration))
+    time = np.linspace(0, total_duration,
+                       int(sample_rate * total_duration))
     frequencies = []
-
     current_time = 0
-
     for binary_num in binary_list:
         bit_number = int(binary_num, 2)
         first_half = bit_number >> 4
         second_half = bit_number & 0b1111
-
         tone_duration = duration_seconds / 2
-
-        _, _, frequency_array1 = generate_tone(first_half, tone_duration)
-        _, _, frequency_array2 = generate_tone(second_half, tone_duration)
-
+        _, _, frequency_array1 = generate_tone(first_half
+                                               , tone_duration)
+        _, _, frequency_array2 = generate_tone(second_half
+                                               , tone_duration)
         frequencies.extend(frequency_array1)
         frequencies.extend(frequency_array2)
         current_time += duration_seconds
 
+
+    plt.figure(figsize=(10, 8))
     plt.scatter(time, frequencies, s=0.5, c='b')
     plt.title('Chirps correspondentes ao Texto Modulado: ')
     plt.xlabel('Tempo')
@@ -225,7 +223,7 @@ def select_file():
     # Create a new pop-up window
     new_window = Toplevel(root)
     new_window.title("Texto Demodulado")
-    new_window.geometry("200x500")
+    new_window.geometry("500x100")
 
     demod_label_new = Label(new_window, text=demodulated_text, font=('Arial', 16, 'bold'))
     demod_label_new.pack(pady=20)
