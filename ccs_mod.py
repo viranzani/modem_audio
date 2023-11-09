@@ -3,6 +3,8 @@ from css_demod import plot_wav
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from PIL import ImageTk
+from PIL import Image as PilImage
 import pyaudio
 from scipy.io import wavfile
 from tkinter import *
@@ -219,8 +221,14 @@ def select_file():
     file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("WAV files", "*.wav")])
     selected_file = file_path
     demodulated_text = demodule_wav(file_path)  # Assuming demodule_wav now accepts the file path as an argument
-    demod_label.config(text="Texto Decodificado: " + demodulated_text)
 
+    # Create a new pop-up window
+    new_window = Toplevel(root)
+    new_window.title("Texto Demodulado")
+    new_window.geometry("200x500")
+
+    demod_label_new = Label(new_window, text=demodulated_text, font=('Arial', 16, 'bold'))
+    demod_label_new.pack(pady=20)
 def plot_selected_file():
     if selected_file:
         plot_wav(selected_file)
@@ -231,12 +239,19 @@ def plot_selected_file():
 root = Tk()
 root.title("Modulador CSS")
 
-root.geometry('800x1000')
+# Get the screen width and height
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Set the size of the window to the size of the monitor
+root.geometry(f"{screen_width}x{screen_height}")
 
 root.configure()
-
-title_label = Label(root, text="Modulador de Texto Para CSS", font=('Arial', 20, 'bold'))
+title_label = Label(root, text="", font=('Arial', 20, 'bold'))
 title_label.pack(pady=10)
+
+title_label2 = Label(root, text="Modulador de Sinais em CSS", font=('Arial', 20, 'bold'))
+title_label2.pack(pady=10)
 
 label_min_freq = Label(root, text="Insira as Frequências:")
 label_min_freq.pack(pady=2)
@@ -262,19 +277,19 @@ label_duration.pack(pady=4)
 entry_duration = Entry(root, width=5, font=('arial', 12))
 entry_duration.pack(pady=2)
 
-label = Label(root, text="Insira um Número de 8 Bits:")
+label = Label(root, text="Insira um Valor em 8-Bits:")
 label.pack(pady=4)
 
 input_frame = Frame(root)
 input_frame.pack(pady=2)
 
-entry = Entry(input_frame, width=30, font=('arial', 12))
+entry = Entry(input_frame, width=60, font=('arial', 12))
 entry.pack(side='left')
 
 button_tone = Button(input_frame, text="Play", command=get_input)
 button_tone.pack(side='left', padx=5)
 
-label_text = Label(root, text="Insira um Texto:")
+label_text = Label(root, text="Insira Seus Dados em Forma de Texto:")
 label_text.pack(pady=4)
 
 text_frame = Frame(root)
@@ -286,22 +301,22 @@ entry_text.pack(side='left', pady=2)
 button_text = Button(text_frame, text="Play", command=convert_and_play_text)
 button_text.pack(side='left', padx=5)
 
-label_filename = Label(root, text="Insira o nome do arquivo que deseja gerar: ")
+label_filename = Label(root, text="Insira o Nome do Arquivo que Deseja Gerar: ")
 label_filename.pack(pady=4)
 
 entry_filename = Entry(root, width=20, font=('arial', 12))
 entry_filename.pack(pady=4)
 
-button_generate_wav = Button(root, text="Gerar Arquivo .wav", command = generate_wav)
+button_generate_wav = Button(root, text="Gerar Arquivo .wav", command = generate_wav, width=20)
 button_generate_wav.pack(pady=6)
 
-separation_label2 = Label(root, text="Gráficos", font=('Arial', 14, 'bold'))
+separation_label2 = Label(root, text="Gráficos da Modulação", font=('Arial', 14, 'bold'))
 separation_label2.pack(pady=4)
 
-button_freq_time = Button(root, text="Gráfico Frequência x Tempo", command=plot_freq_time)
+button_freq_time = Button(root, text="Gráfico 8-Bits", command=plot_freq_time, width=20)
 button_freq_time.pack()
 
-button_freq_time_text = Button(root, text="Gráfico Frequência x Tempo (Texto)", command=plot_freq_time_text)
+button_freq_time_text = Button(root, text="Gráfico Texto", command=plot_freq_time_text, width=20)
 button_freq_time_text.pack(pady=4)
 
 
@@ -309,18 +324,46 @@ separation_label3 = Label(root, text="Demodulação", font=('Arial', 14, 'bold')
 separation_label3.pack(pady=4)
 
 
-button_select_file = Button(root, text="Demodulação do .wav", command=select_file)
+button_select_file = Button(root, text="Demodulação do .wav", command=select_file, width=20)
 button_select_file.pack()
 
-button_plot_wav = Button(root, text="Gráfico Demodulação", command=plot_selected_file)
+button_plot_wav = Button(root, text="Gráfico Demodulação", command=plot_selected_file, width=20)
 button_plot_wav.pack(pady=4)
 
-demod_label= Label(root, text="Texto Decodificado: ", font=('Arial', 16, 'bold'))
-demod_label.pack(pady=16)
 
 entry_min_freq.insert(0, str(default_min_freq).center(5))
 entry_max_freq.insert(0, str(default_max_freq).center(5))
 entry_duration.insert(0, str(default_duration).center(5))
+
+image_path1 = "logo-unifei.png"  # Replace with the actual path to your image
+
+img1 = PilImage.open(image_path1)
+
+# Resize the image if necessary
+img1 = img1.resize((screen_width // 5, screen_height // 7))  # Ajuste o tamanho conforme necessário
+# Convert the image for Tkinter
+photo1 = ImageTk.PhotoImage(img1)
+
+# Create a label to display the image
+image_label1 = Label(root, image=photo1)
+image_label1.image = photo1  # Keep a reference
+image_label1.pack(side=LEFT, anchor=SW, padx=10, pady=10)  # Adjust the padding as needed
+
+
+image_path2 = "logo-iesti.png"  # Replace with the actual path to your image
+
+img2 = PilImage.open(image_path2)
+
+# Resize the image if necessary
+img2 = img2.resize((screen_width // 5, screen_height // 7))  # Ajuste o tamanho conforme necessário
+# Convert the image for Tkinter
+photo2 = ImageTk.PhotoImage(img2)
+
+# Create a label to display the image
+image_label2 = Label(root, image=photo2)
+image_label2.image = photo2  # Keep a reference
+image_label2.pack(side=RIGHT, anchor=SW, padx=10, pady=10)  # Adjust the padding as needed
+
 
 label_min_freq.configure( font=('Arial', 12))
 label_duration.configure(font=('Arial', 12))
@@ -335,6 +378,8 @@ button_freq_time_text.configure(background='lightblue', font=('Arial', 12))
 button_select_file.configure(background='lightgrey', font=('Arial', 12))
 button_generate_wav.configure(background='lightgrey', font=('Arial', 12))
 button_plot_wav.configure(background='lightblue', font=('Arial', 12))
+
+
 
 
 root.mainloop()
