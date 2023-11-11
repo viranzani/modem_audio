@@ -1,0 +1,6 @@
+*.wav
+
+
+
+# Exceto este arquivo .gitignore
+!.gitignore
