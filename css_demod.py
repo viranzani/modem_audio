@@ -12,7 +12,7 @@ def demodule_wav(filename):
     # Calcula a transformada de Hilbert do sinal
     data_hilbert = signal.hilbert(data)
     #TODO - Trocar envoltória por frequencia instantanea
-    frequency = np.abs(data_hilbert)
+    amplitude_envelop = np.abs(data_hilbert)
     duration=len(data)/sample_rate
     print(duration)
 
@@ -39,24 +39,20 @@ def demodule_wav(filename):
         instants.append("{:.5f}".format(i))
 
 
-    # Calcular a frequência instantânea a partir da fase do sinal analítico
-    phase = np.unwrap(np.angle(data_hilbert_array))  # Desembrulhar a fase para evitar descontinuidades
-    phase_break = (np.diff(phase) / (2.0 * np.pi) * sample_rate)  # Frequência instantânea em Hz
-
-    #print(len(data))
-
-    #Guardando o tempo em segundos de cada quebra de fase que ocorreu após os Sync Chirps e antes dos End Chirps
+    # Calcular as quebras de fase a partir da fase do sinal analítico
+    phase = np.unwrap(np.angle(data_hilbert_array))
+    phase_break = (np.diff(phase) / (2.0 * np.pi) * sample_rate)
+    #Guardando o tempo em segundos de cada quebra de fase
+    # que ocorreu após os Sync Chirps e antes dos End Chirps
     frequencies=[]
     last_frequency=phase_break[0]
     for i in range(0, (len(phase_break) - 1)):
         if phase_break[i] - last_frequency < -350:
             moment = i / sample_rate
-            #print(i)
-            #print(moment)
+
             if 1.5 <= moment <= (duration - 1):
                 instants.append("{:.5f}".format(moment))
                 frequencies.append("{:.5f}".format(phase_break[i]))
-
         last_frequency = phase_break[i]
 
     #É necessário reordenar a lista para que os momentos da quebra de fase e os pontos forçados no começo do código fiquem em ordem crescente
@@ -164,17 +160,15 @@ def plot_wav(filename):
 
     plt.figure(figsize=(12, 6))
     plt.subplot(2, 1, 1)
-    plt.plot(time, data, label='Sinal de Áudio')
-    plt.plot(time, frequency, label='Frequência Instantânea')
+    plt.plot(time, data, label='Sinal Analítico')
+    plt.plot(time, frequency, label='Envoltória de Amplitudes')
     plt.xlabel('Tempo (s)')
-    plt.ylabel('Amplitude')
     plt.legend()
 
     plt.subplot(2, 1, 2)
     phase_break = (np.diff(np.unwrap(np.angle(data_hilbert))) / (2.0 * np.pi) * sample_rate)
     plt.plot(time[:-1], phase_break)
     plt.xlabel('Tempo (s)')
-    plt.ylabel('Frequência Instantânea (Hz)')
     plt.ylim(0, 4000)
 
     plt.tight_layout()
