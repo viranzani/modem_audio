@@ -11,8 +11,6 @@ def demodule_wav(filename):
 
     # Calcula a transformada de Hilbert do sinal
     data_hilbert = signal.hilbert(data)
-    #TODO - Trocar envoltória por frequencia instantanea
-    amplitude_envelop = np.abs(data_hilbert)
     duration=len(data)/sample_rate
     print(duration)
 
@@ -152,16 +150,13 @@ def plot_wav(filename):
     sample_rate, data = wav.read(filename)
 
     data_hilbert = signal.hilbert(data)
-    frequency = np.abs(data_hilbert)
-
-    duration = len(data) / sample_rate
-
+    amplitude_envelop = np.abs(data_hilbert)
     time = np.arange(len(data)) / sample_rate
 
     plt.figure(figsize=(12, 6))
     plt.subplot(2, 1, 1)
     plt.plot(time, data, label='Sinal Analítico')
-    plt.plot(time, frequency, label='Envoltória de Amplitudes')
+    plt.plot(time, amplitude_envelop, label='Envoltória de Amplitudes')
     plt.xlabel('Tempo (s)')
     plt.legend()
 
