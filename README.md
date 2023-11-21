@@ -1,4 +1,4 @@
-Modulação e Demodulação de Sinais por \textit{Software} Utilizando a Técnica de Espalhamento Espectral \textit{Chirp} (CSS)
+Modulação e Demodulação de Sinais por Software Utilizando a Técnica de Espalhamento Espectral Chirp (CSS)
 
 Contexto  
 O presente trabalho é resultado de um esforço dedicado à pesquisa e desenvolvimento na área de modulação e demodulação de sinais, culminando em um projeto de conclusão de curso (TCC) que aborda o tema da modulação em Chirp Spread Spectrum (CSS). A modulação CSS é uma técnica avançada que oferece benefícios no âmbito de comunicações sem fio e transmissão de dados robustas.  
