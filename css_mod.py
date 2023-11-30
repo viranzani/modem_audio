@@ -89,32 +89,49 @@ def plot_frequency_time(bit_number1, bit_number2, duration_seconds):
 def plot_frequency_time_text(text, duration_seconds):
     binary_text = ' '.join(format(ord(i), '08b') for i in text)
     binary_list = binary_text.split(' ')
-    total_duration = len(binary_list) * duration_seconds
-    time = np.linspace(0, total_duration,
-                       int(sample_rate * total_duration))
+    total_duration = len(binary_list) * duration_seconds + 2.5  # Updated total duration
+    time = np.linspace(0, total_duration, int((sample_rate) * (total_duration)))
+    print(len(time))
     frequencies = []
-    current_time = 0
+
+    # Add three increasing chirps at the beginning
+    _, _,sync_tone = generate_increasing_tone(duration_seconds)
+    sync_tone_twice = np.concatenate((sync_tone, sync_tone))
+    sync_tone_thrice = np.concatenate((sync_tone_twice, sync_tone))
+    frequencies.extend(sync_tone_thrice)
+    print(len(frequencies))
+    current_time = (duration_seconds/2) * 3  # Move the current time after the three chirps
+
+    # Loop through the binary list and add frequency data
     for binary_num in binary_list:
         bit_number = int(binary_num, 2)
         first_half = bit_number >> 4
         second_half = bit_number & 0b1111
-        tone_duration = duration_seconds / 2
-        _, _, frequency_array1 = generate_tone(first_half
-                                               , tone_duration)
-        _, _, frequency_array2 = generate_tone(second_half
-                                               , tone_duration)
+        tone_duration = duration_seconds/2
+        _, _, frequency_array1 = generate_tone(first_half, tone_duration)
+        _, _, frequency_array2 = generate_tone(second_half, tone_duration)
         frequencies.extend(frequency_array1)
+        print(len(frequencies))
+
         frequencies.extend(frequency_array2)
+        print(len(frequencies))
+
         current_time += duration_seconds
 
-
+    # Add two decreasing chirps at the end
+    _, _, end_tone = generate_decreasing_tone(duration_seconds)
+    end_tone_twice = np.concatenate((end_tone, end_tone))
+    frequencies.extend(end_tone_twice)
+    print(len(frequencies))
+    # Plot the scatter graph
     plt.figure(figsize=(10, 8))
     plt.scatter(time, frequencies, s=0.5, c='b')
-    plt.title('Chirps correspondentes ao Texto Modulado: ')
-    plt.xlabel('Tempo')
-    plt.ylabel('Frequência')
+    plt.title('Chirps corresponding to the Modulated Text')
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
     plt.grid()
     plt.show()
+
 
 # Função que recebe o byte e toca o som
 def get_input():
