@@ -397,4 +397,4 @@ button_plot_wav.configure(background='lightblue', font=('Arial', 12))
 
 
 
-root.mainloop()
+#root.mainloop()

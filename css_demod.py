@@ -12,7 +12,7 @@ def demodule_wav(filename):
     # Calcula a transformada de Hilbert do sinal
     data_hilbert = signal.hilbert(data)
     duration=len(data)/sample_rate
-    print(duration)
+    #print(duration)
 
     segment_size = 24000  # Tamanho do segmento
 
@@ -122,27 +122,28 @@ def demodule_wav(filename):
         for value in desired_ramp_time_float
     ]
 
-    print(corresponding_frequencies)
+    #print(corresponding_frequencies)
 
 
     # Agrupa as frequências correspondentes em pares pois cada letra utiliza dois nibbles e busca a letra correspondente para cada par de nibble
     pairs = [(corresponding_frequencies[i], corresponding_frequencies[i + 1]) for i in range(0, len(corresponding_frequencies), 2)]
     decoded_text = ""
-    print("Pares de valores correspondentes:")
     for pair in pairs:
         nibble_1 = pair[0]
         nibble_2 = pair[1]
         relevant_row = excel_data[(excel_data['nibble 1 (Hz)'] == nibble_1) & (excel_data['nibble 2 (Hz)'] == nibble_2)]
         if not relevant_row.empty:
             ascii_result = relevant_row['ascii'].values[0]
-            print(ascii_result)
-            #print(type(ascii_result))
-            if ascii_result == "space":
-                ascii_result = " "
-            decoded_text = decoded_text + str(ascii_result)
 
+            # Check if the decoded character is "nan" and replace it with a default character
+            if pd.isna(ascii_result):
+                decoded_text += "'"
+            elif ascii_result == "space":
+                decoded_text += " "
+            else:
+                decoded_text += str(ascii_result)
     # Imprime o texto decodificado
-    print("Texto decodificado:", decoded_text)
+    #print("Texto decodificado:", decoded_text)
     return decoded_text
 
 # Função para plottar o gráfico da demodulação
